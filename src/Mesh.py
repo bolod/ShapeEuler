@@ -1,10 +1,13 @@
 from numpy import *
+import ShapeEuler
 
 class Mesh():
 
 	def __init__(self, triangles=array([])):
 		
 		self.triangles = triangles
+		self.euler = arrat([])
+		self.barycenter = array([])
 	
 	def __repr__(self):
 		"""
@@ -113,4 +116,78 @@ class Mesh():
 			triangle.translate(translation)
 		
 		return self
+	
+	def update_euler(self):
+		"""
+		Updates the affine euler matrix of this mesh.
+		
+		Returns
+		-------
+		self : Mesh
+			this mesh,
+			for chaining purpose
+		"""
+		
+		tri_list = [ [ point.coords.tolist() for point in triangle.points] for triangle in self.triangles]
+		
+		self.euler = AffineEulerMat(tri_list, II)
+		
+		return self
+		
+	
+	def get_euler(self):
+		"""
+		Gets the affine euler matrix of this mesh.
+		
+		Returns
+		-------
+		euler : float matrix 4 x 4
+			the affine euler matrix of this mesh
+		"""
+		
+		return self.euler
+	
+	def update_barycenter(self):
+		"""
+		Updates the barycenter of this mesh.
+		
+		Returns
+		-------
+		self : Mesh
+			this mesh,
+			for chaining purpose
+		"""
+		
+		euler = self.update_euler().get_euler()
+		
+		self.barycenter = (array(euler[-1]) / euler[-1][-1])[:-1]
+		
+		return self	
+	
+	def get_barycenter(self):
+		"""
+		Gets the barycenter of this mesh.
+		
+		Returns
+		-------
+		self : float array
+			the barycenter of this mesh
+		"""
+				
+		return self.barycenter
+	
+	def get_principal_axes(aem):
+		"""
+		Gets the principal axes of this mesh.
+		
+		Returns
+		-------
+		axes : matrix
+			the principal axes of this mesh
+		"""
+		
+		eigen_vec = transpose(linalg.eig(aem)[1])
+		eigen_val = linalg.eigvals(aem)
+		
+		return [eigen_vec[i] for i in eigen_val.argsort()]
 	
