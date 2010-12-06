@@ -108,3 +108,19 @@ class Triangle():
 			point.translate(translation)
 		
 		return self
+	
+	def to_plasm(self):
+		"""
+		Gets the PLaSM HPC of this triangle.
+		
+		Returns
+		-------
+		struct : PLaSM HPC
+			the PLaSM HPC of this triangle
+		"""
+		
+		points = [ point.get_coords().tolist() for point in self.points]
+		pol = MKPOL([points, [[1,2,3]], [1]])
+		struct = STRUCT(pol)
+		
+		return struct

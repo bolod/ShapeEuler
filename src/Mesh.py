@@ -226,18 +226,18 @@ class Mesh():
 		
 		return filtered_mesh
 	
-	def get_plasm_struct(self):
+	def to_plasm(self):
 		"""
 		Gets the PLaSM HPC of this mesh.
 		
 		Returns
 		-------
-		hpc : PLaSM HPC
+		struct : PLaSM HPC
 			the PLaSM HPC of this mesh
 		"""
 		
-		p_list = [ [ p.coords.tolist() for p in tri.points] for tri in self.triangles
-		struct = STRUCT(MKPOL([p_list, [[1,2,3]], [1]]))
+		triangles = [ triangle.to_plasm() for triangle in self.triangles ]
+		struct = STRUCT(triangles)
 		
 		return struct
 	
