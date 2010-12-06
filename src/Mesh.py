@@ -223,6 +223,12 @@ class Mesh():
 		filtered_mesh = Mesh()
 		
 		#TODO: waiting for bolod
+		#def predicate(x):
+		#	[x1,y1,z1],[x2,y2,z2],[x3,y3,z3] = x
+		#	return (((z1>0) ^ (z2>0)) or ((z2>0) ^ (z3>0)) or ((z3>0) ^ (z1>0)) or
+		#			(z1 + z2 ==0) or (z2 + z3 ==0) or (z3+z1 ==0))
+		#
+		#return filter(predicate, mesh)
 		
 		return filtered_mesh
 	
