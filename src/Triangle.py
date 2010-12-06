@@ -1,5 +1,6 @@
 from numpy import *
 from Point import *
+from pyplasm import *
 
 class Triangle():
 
@@ -162,6 +163,6 @@ class Triangle():
 		
 		points = [ point.get_coords().tolist() for point in self.points]
 		pol = MKPOL([points, [[1,2,3]], [1]])
-		struct = STRUCT(pol)
+		struct = STRUCT([pol])
 		
 		return struct
