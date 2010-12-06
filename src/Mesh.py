@@ -177,7 +177,7 @@ class Mesh():
 				
 		return self.barycenter
 	
-	def get_principal_axes(self):
+	def get_principal_axis(self):
 		"""
 		Gets the principal axes of this mesh.
 		
@@ -192,6 +192,23 @@ class Mesh():
 		eigen_val = linalg.eigvals(euler)
 		
 		return [eigen_vec[i] for i in eigen_val.argsort()]
+	
+	def align(self):
+		"""
+		Align this mesh by its principal axis.
+		
+		Do the following steps:
+		1. translate the mesh bringing the barycenter in the origin
+		2. rotate the mesh by its principal axes
+		
+		Returns
+		-------
+		self : Mesh
+			this mesh aligned,
+			for chaining purpose
+		"""
+		
+		return self.translate(self.get_barycenter()).rotate(self.get_principal_axes())
 	
 	def filter_clipped_tri(self):
 		"""
