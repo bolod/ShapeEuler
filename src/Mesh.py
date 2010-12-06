@@ -1,5 +1,6 @@
 from numpy import *
-import ShapeEuler
+from pyplasm import *
+from ShapeEuler import *
 
 class Mesh():
 
