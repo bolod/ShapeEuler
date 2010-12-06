@@ -1,10 +1,11 @@
 from numpy import *
+from Point import *
 
 class Triangle():
 
-	def __init__(self, p1, p2, p3):
+	def __init__(self, points=[Point(), Point(), Point()]):
 		
-		self.points = array([p1,p2,p3])
+		self.points = points
 	
 	def __repr__(self):
 		"""
@@ -16,9 +17,9 @@ class Triangle():
 			info of this triangle
 		"""
 		
-		info = "{\n"
-		info += "points: " + self.points + "\n"
-		info += "}"
+		info = "\ntriangle:\n"
+		for point in self.points:
+			info += str(point) + "\n"
 		
 		return info
 	
@@ -34,17 +35,57 @@ class Triangle():
 		
 		return Triangle(self.points[0].clone(), self.points[1].clone(), self.points[2].clone())
 	
-	def get_points(self):
+	def get_point(self, i):
 		"""
-		Gets the points of this triangle.
+		Gets the i-th point of this triangle.
+		
+		Patameters
+		----------
+		i : int 
+			the index of point to get
 		
 		Returns
 		-------
 		points : Point array
-			points of this atom
+			the i-th point of this triangle
 		"""
 		
-		return self.points
+		return self.points[i]
+	
+	def set_point(self, i, point):
+		"""
+		Sets the i-th point of this triangle by the given point.
+		
+		Parameters
+		----------
+		i : int
+			the index of point to set
+			
+		point : Point array
+			the point to copy
+		
+		Returns
+		-------
+		self : Triangle
+			this triangle,
+			for chaining purpose
+		"""
+		
+		self.points[i][0] = point[0]
+		self.points[i][1] = point[1]
+		self.points[i][2] = point[2]
+		
+		return self
+	
+	def get_p1(self):
+		"""
+		Gets the first point of this triangle.
+		
+		Returns
+		-------
+		point : Point
+			the first point of this triangle
+		"""
 	
 	def rotate(self, rotation):
 		"""

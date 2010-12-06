@@ -1,13 +1,14 @@
 from numpy import *
 from pyplasm import *
 from ShapeEuler import *
+from Triangle import *
 
 class Mesh():
 
-	def __init__(self, triangles=array([])):
+	def __init__(self, triangles=[]):
 		
 		self.triangles = triangles
-		self.euler = arrat([])
+		self.euler = array([])
 		self.barycenter = array([])
 	
 	def __repr__(self):
@@ -20,9 +21,9 @@ class Mesh():
 			info of this triangle
 		"""
 		
-		info = "{\n"
-		info += "triangles: \n" + self.triangles + "\n"
-		info += "}"
+		info = "\nmesh:\n"
+		for triangle in self.triangles:
+			info += str(self.triangles) + "\n"
 		
 		return info
 	
@@ -43,7 +44,7 @@ class Mesh():
 		
 		return clone
 	
-	def get_triangles(self):
+	def to_list(self):
 		"""
 		Gets the triangles of this mesh.
 		
@@ -54,6 +55,59 @@ class Mesh():
 		"""
 		
 		return self.triangles
+		
+	def add(self, triangle):
+		"""
+		Adds the given triangle to this mesh.
+		
+		Parameters
+		----------
+		triangle : Triangle
+			the triangle to add
+		
+		Returns
+		-------
+		self : Mesh
+			this mesh, 
+			for chaining purpose
+		"""
+		
+		self.triangles.append(triangle)
+		
+		return self
+	
+	def add_all(self, triangle_list):
+		"""
+		Adds the given triangles to this mesh.
+		
+		Parameters
+		----------
+		triangle_list : Triangle list
+			the triangle list to add
+		
+		Returns
+		-------
+		self : Mesh
+			this mesh, 
+			for chaining purpose
+		"""
+		
+		for triangle in triangle_list:
+			self.add(triangle)
+		
+		return self
+	
+	def size(self):
+		"""
+		Gets the number of triangles of this mesh.
+		
+		Returns
+		-------
+		size : int
+			the number of triangles of this mesh
+		"""
+		
+		return len(self.triangles)
 	
 	def rotate(self, rotation):
 		"""

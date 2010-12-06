@@ -2,9 +2,9 @@ from numpy import *
 
 class Point():
 
-	def __init__(self, x, y, z):
+	def __init__(self, coords=[0.,0.,0.]):
 		
-		self.coords = array([x, y, z])
+		self.coords = array(coords)
 	
 	def __repr__(self):
 		"""
@@ -16,9 +16,7 @@ class Point():
 			info of this point
 		"""
 		
-		info = "{\n"
-		info += "coords: " + self.coords + "\n"
-		info += "}"
+		info = str(self.coords)
 		
 		return info
 	
@@ -82,11 +80,10 @@ class Point():
 		
 		return self.coords[2]
 	
-	def get_distance(self, point=Point(0,0,0)):
+	def get_distance(self, point):
 		"""
-		Gets the distance between this point and the given point, 
-		or the origin if no point is given.
-		
+		Gets the distance between this point and the given point.
+				
 		Parameters
 		----------
 		point : Point

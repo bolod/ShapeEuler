@@ -1,24 +1,71 @@
 import os
-from pyplasm import *
 import re
+from Mesh import *
 
-def parseOFF(off_file_name, off_file_path="."):
+class ParserOff():
 	
-	file_path_name = os.path.join(off_file_path, off_file_name)
-	off_file_list = filter(lambda s: not(s.startswith('#') or s.startswith('\n') or s.startswith('\r') or not(re.findall('([a-z]|[A-Z]|[0-9])+', s))), 
-		open(file_path_name, "r").readlines())
-	vertex_count, face_count, edge_count = map(lambda x: int(x), re.split(' +', off_file_list[1].strip()))
-	vertex_list = map(lambda x: map(lambda y: float(y), re.split(' +', x.strip())), off_file_list[2:vertex_count+2])
-	face_et_al_list = map( lambda x: map( lambda y: int(float(y)), re.split('[ ]+', x.strip())), off_file_list[vertex_count+2:vertex_count+2+face_count])
-	face_list = [ l[1:l[0]+1] for l in face_et_al_list]
-	return [[vertex_list[i] for i in vertexes_in_face] for vertexes_in_face in face_list], vertex_list, face_list
+	def __init__(self):
+		
+		self.descr = "Parser for .off file"
+	
+	def __repr__(self):
+		"""
+		Gets the info of this parser.
+		
+		Returns
+		-------
+		info : String
+			info of this parser
+		"""
+		
+		info = "{\n"
+		info += "descr: " + self.descr + "}\n"
+		info += "}"
+		
+		return info
+	
+	def parse(self, file_name, file_path="../resources"):
+		"""
+		Parses the file .off with the given name in the given path.
+		
+		Parameters
+		----------
+		file_name : String
+			the name of the file to parse
+		file_path : String
+			the path of the file to parse
+			
+		Returns
+		-------
+		mesh : Mesh
+			the mesh of which have been parsed the coordinates of the vertices
+		"""
+		
+		file_path_name = os.path.join(file_path, file_name)
+		file_lines = open(file_path_name, "r").readlines()
 
-def off_in_plasm(vertexes, indexes):
-	return MKPOL([vertexes, AA(AA(lambda x: x+1))(indexes), [1]])
-    
+		filtered_lines = \
+			filter(lambda s: not(s.startswith('#')),
+				(filter(lambda s: not(s.startswith('\n')),
+					(filter(lambda s: not(s.startswith('\r')), 
+						(filter(lambda s: re.findall('([a-z]|[A-Z]|[0-9])+', s), file_lines)))
+					))
+				))
+		
+		vertex_count, face_count, edge_count = map(lambda x: int(x), re.split(' +', filtered_lines[1].strip()))
+		vertex_list = map(lambda x: map(lambda y: float(y), re.split(' +', x.strip())), filtered_lines[2:vertex_count+2])
+		face_et_al_list = map( lambda x: map( lambda y: int(float(y)), re.split('[ ]+', x.strip())), filtered_lines[vertex_count+2:vertex_count+2+face_count])
+		face_list = [ l[1:l[0]+1] for l in face_et_al_list]
+		
+		mesh = Mesh()
+		
+		mesh.add_all([ Triangle([ Point(vertex_list[i]) for i in vertexes_in_face]) for vertexes_in_face in face_list])
+		
+		return mesh
+		
 if __name__ == "__main__":
-    off_file_name = "tetra.off"
-    off_file_path = "/home/ivanagloriosi/Dropbox/UNI/TESI/ShapeEuler/aim@shape_models/"
-    #off_file_path = "C:\\Users\\ivanagloriosi\\Documents\\My Dropbox\\UNI\\TESI\\ShapeEuler\\aim@shape_models"
-    a, b, c = parseOFF(off_file_name, off_file_path)
-    VIEW(off_in_plasm(b, c))
+	
+	file_name = "tetra.off"
+	parser = ParserOff()
+	mesh = parser.parse(file_name)
+	print mesh
