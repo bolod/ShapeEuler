@@ -128,7 +128,7 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		tri_list = [ [ point.coords.tolist() for point in triangle.points] for triangle in self.triangles]
+		tri_list = [ [ p.coords.tolist() for p in tri.points] for tri in self.triangles]
 		
 		self.euler = AffineEulerMat(tri_list, II)
 		
@@ -176,7 +176,7 @@ class Mesh():
 				
 		return self.barycenter
 	
-	def get_principal_axes(aem):
+	def get_principal_axes(self):
 		"""
 		Gets the principal axes of this mesh.
 		
@@ -186,8 +186,40 @@ class Mesh():
 			the principal axes of this mesh
 		"""
 		
-		eigen_vec = transpose(linalg.eig(aem)[1])
-		eigen_val = linalg.eigvals(aem)
+		euler = self.euler
+		eigen_vec = transpose(linalg.eig(euler)[1])
+		eigen_val = linalg.eigvals(euler)
 		
 		return [eigen_vec[i] for i in eigen_val.argsort()]
+	
+	def filter_clipped_tri(self):
+		"""
+		Gets the portion of this mesh clipped by the xy plane.
+		
+		Returns
+		-------
+		filtered_mesh: Mesh
+			the portion of this mesh clipped by the xy plane
+		"""
+		
+		filtered_mesh = Mesh()
+		
+		#TODO: waiting for bolod
+		
+		return filtered_mesh
+	
+	def get_plasm_struct(self):
+		"""
+		Gets the PLaSM HPC of this mesh.
+		
+		Returns
+		-------
+		hpc : PLaSM HPC
+			the PLaSM HPC of this mesh
+		"""
+		
+		p_list = [ [ p.coords.tolist() for p in tri.points] for tri in self.triangles
+		struct = STRUCT(MKPOL([p_list, [[1,2,3]], [1]]))
+		
+		return struct
 	
