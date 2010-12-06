@@ -2,7 +2,7 @@ from numpy import *
 
 class Point():
 
-	def __init__(self, coords=[0.,0.,0.]):
+	def __init__(self, coords=array([0.,0.,0.])):
 		
 		self.coords = array(coords)
 	
@@ -16,7 +16,7 @@ class Point():
 			info of this point
 		"""
 		
-		info = str(self.coords)
+		info = str(self.coords.tolist())
 		
 		return info
 	

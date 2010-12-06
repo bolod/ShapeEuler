@@ -6,7 +6,7 @@ class Triangle():
 
 	def __init__(self, points=[Point(), Point(), Point()]):
 		
-		self.points = points
+		self.points = array(points)
 	
 	def __repr__(self):
 		"""
@@ -20,7 +20,7 @@ class Triangle():
 		
 		info = "\ntriangle:\n"
 		for point in self.points:
-			info += str(point) + "\n"
+			info += str(point.tolist()) + "\n"
 		
 		return info
 	

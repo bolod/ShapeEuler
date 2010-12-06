@@ -8,8 +8,8 @@ class Mesh():
 	def __init__(self, triangles=[]):
 		
 		self.triangles = triangles
-		self.euler = array([])
-		self.barycenter = array([])
+		self.euler = array([[1.,0.,0.,0.],[0.,1.,0.,0.],[0.,0.,1.,0.], [0.,0.,0.,1.]])
+		self.barycenter = array([0.,0.,0.])
 	
 	def __repr__(self):
 		"""
@@ -183,9 +183,11 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		tri_list = [ [ p.coords.tolist() for p in tri.points] for tri in self.triangles]
+		tri_list = [ [ point.coords.tolist() for point in triangle.points] for triangle in self.triangles]
 		
 		self.euler = AffineEulerMat(tri_list, II)
+		
+		print "euler\n", self.euler
 		
 		return self
 		
@@ -217,6 +219,8 @@ class Mesh():
 		
 		self.barycenter = (array(euler[-1]) / euler[-1][-1])[:-1]
 		
+		print "barycenter\n", self.barycenter
+		
 		return self	
 	
 	def get_barycenter(self):
@@ -231,7 +235,7 @@ class Mesh():
 				
 		return self.barycenter
 	
-	def get_principal_axis(self):
+	def get_principal_axes(self):
 		"""
 		Gets the principal axes of this mesh.
 		
@@ -244,8 +248,15 @@ class Mesh():
 		euler = self.euler
 		eigen_vec = transpose(linalg.eig(euler)[1])
 		eigen_val = linalg.eigvals(euler)
+		axes = [eigen_vec[i] for i in eigen_val.argsort()]
+				
+		print "\naxes\n", axes
 		
-		return [eigen_vec[i] for i in eigen_val.argsort()]
+		axes = [ v[:3] for v in axes[:3]]
+		
+		print "\nnew axes\n", axes 
+		
+		return axes
 	
 	def align(self):
 		"""
