@@ -5,11 +5,21 @@ from Mesh import *
 
 if __name__ == "__main__":
 	
-	FILE_NAME = "cow1.off"
+	file_name_list = [ 
+		"camel.off",
+		"cow1.off",
+		"cube.off",
+		"cube4norm.off",
+		"hand-olivier-isotropic.off",
+		"hand-olivier-uniform-50kv.off",
+		"icosa.off",
+		"tetra.off"]
+	
+	file_name = file_name_list[5]
 
 	parser = ParserOff()
 	#NOTE: before align, update the euler matrix
-	mesh = parser.parse(FILE_NAME).update_euler().align()
+	mesh = parser.parse(file_name).update_euler().align()
 	struct = mesh.to_plasm()
 	VIEW(SKELETON(1)(struct))
 	
