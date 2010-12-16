@@ -1,12 +1,12 @@
 from numpy import *
-from Point import *
 from pyplasm import *
 
 class Triangle():
 
-	def __init__(self, points=[Point(), Point(), Point()]):
+	def __init__(self, points=[[0.,0.,0.], [0.,0.,0.], [0.,0.,0.]]):
 		
-		self.points = array(points)
+		self.current = 0
+		self.points = [ array(point) for point in points ]
 	
 	def __repr__(self):
 		"""
@@ -20,9 +20,38 @@ class Triangle():
 		
 		info = "\ntriangle:\n"
 		for point in self.points:
-			info += str(point.tolist()) + "\n"
+			info += str(point) + "\n"
 		
 		return info
+		
+	
+	def __getitem__(self, i):
+		
+		return self.points[i]
+	
+	def __setitem__(self, i, point):
+		
+		self.points[i] = array(point)
+
+	def __iter__(self):
+		
+		return self
+
+	def next(self):
+		
+		if self.current >= len(self.points):
+			raise StopIteration
+		else:
+			self.current += 1
+			return self.points[self.current - 1]
+	
+	def index(self, value):
+		
+		for i in range(len(self.points)):
+			if value[0] == self.points[i][0] and value[1] == self.points[i][1] and value[2] == self.points[i][2]: 
+				return i
+		
+		return -1
 	
 	def clone(self):
 		"""
@@ -34,8 +63,20 @@ class Triangle():
 			the clone of this point
 		"""
 		
-		return Triangle(self.points[0].clone(), self.points[1].clone(), self.points[2].clone())
-	
+		return Triangle([ point[:] for point in self.points ])
+		
+	def get_points(self):
+		"""
+		Gets the point list of this triangle.
+		
+		Returns
+		-------
+		points : array (3,3)
+		the point list of this triangle
+		"""
+		
+		return self.points
+        
 	def get_point(self, i):
 		"""
 		Gets the i-th point of this triangle.
@@ -72,21 +113,10 @@ class Triangle():
 			for chaining purpose
 		"""
 		
-		self.points[i][0] = point[0]
-		self.points[i][1] = point[1]
-		self.points[i][2] = point[2]
+		self.points[i] = point[:]
 		
 		return self
 	
-	def get_p1(self):
-		"""
-		Gets the first point of this triangle.
-		
-		Returns
-		-------
-		point : Point
-			the first point of this triangle
-		"""
 	
 	def rotate(self, rotation):
 		"""
@@ -103,9 +133,8 @@ class Triangle():
 			this triangle rotated,
 			for chaining purpose
 		"""
-		
-		for point in self.points:
-			point.rotate(rotation)
+
+		self.points = [ dot(rotation, point) for point in self.points ]
 		
 		return self
 
@@ -125,8 +154,7 @@ class Triangle():
 			for chaining purpose
 		"""
 		
-		for point in self.points:
-			point.scale(scale)
+		self.points = [ point * scale for point in self.points ]
 		
 		return self
 	
@@ -146,8 +174,7 @@ class Triangle():
 			for chaining purpose
 		"""
 		
-		for point in self.points:
-			point.translate(translation)
+		self.points = [ point - translation for point in self.points ]
 		
 		return self
 	
@@ -160,9 +187,48 @@ class Triangle():
 		struct : PLaSM HPC
 			the PLaSM HPC of this triangle
 		"""
-		
-		points = [ point.get_coords().tolist() for point in self.points]
-		pol = MKPOL([points, [[1,2,3]], [1]])
+		points = [ point.tolist() for point in self.points ]
+		pol = MKPOL([ points, [[1,2,3]], [1] ])
 		struct = STRUCT([pol])
 		
 		return struct
+
+	def is_over(self, plane=2):
+		"""
+		Tests if this triangle has all points over the plane xy.
+		
+		Returns
+		-------
+		test : boolean
+		true if this triangle has all points over the plane xy 
+		false otherwise
+		"""
+		
+		return self.points[0][plane] >= 0 and self.points[1][plane] >= 0 and self.points[2][plane] >= 0
+
+	def is_under(self, plane=2):
+		"""
+		Tests if this triangle has all points under the plane xy.
+
+		Returns
+		-------
+		test : boolean
+		true if this triangle has all points under the plane xy 
+		false otherwise
+		"""
+		
+		return self.points[0][plane] <= 0 and self.points[1][plane] <= 0 and self.points[2][plane] <= 0
+		
+	def is_on(self, plane=2):
+		"""
+		Tests if this triangle lie on xy plane.
+		
+		Returns
+		-------
+		test : boolean
+		true if this triangle lie on xy plane
+		false otherwise
+		"""
+		
+		return self.points[0][plane] == 0 and self.points[1][plane] == 0 and self.points[2][plane] == 0
+
