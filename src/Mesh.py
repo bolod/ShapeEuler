@@ -193,7 +193,9 @@ class Mesh():
 		"""
 		
 		for triangle in self.triangles:
+			print "pre: ", triangle
 			triangle.translate(translation)
+			print "post:", triangle
 		
 		return self
 	
@@ -269,8 +271,10 @@ class Mesh():
 				for chaning purpose
 		"""
 		
-		self.update_barycenter()
 		self.update_euler(fun)
+		print "euler", self.euler
+		self.update_barycenter()
+		print "barycenter", self.barycenter
 		
 		return self
 	
@@ -348,11 +352,9 @@ class Mesh():
 				#print "is clipped!\n"
 				clipped_mesh.add(tri)
 		
-		print "clipped mesh:\n", z_positive_mesh
 		#single=[]
 		#none=[]
 		for clipped_tri in clipped_mesh:
-			print "clipped_tri", clipped_tri.points
 			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = clipped_tri.points
 			if (int(z1==0))+(int(z2==0))+(int(z3==0)) == 1: #one vertex on xy-plane
 				assert((int(z1==0))+(int(z2==0))+(int(z3==0)) == 1)
