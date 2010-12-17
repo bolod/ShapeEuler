@@ -20,7 +20,7 @@ if __name__ == "__main__":
 		12: "tetra.off"
 	}
 	
-	file_name = file_name_list[11]
+	file_name = file_name_list[10]
 	parser = ParserOff()
 	mesh = parser.parse(file_name)
 #	a, b = mesh.split_z()
@@ -38,15 +38,15 @@ if __name__ == "__main__":
 	struct = SKELETON(1)(mesh.to_plasm())
 	VIEW((struct))
 	
-	mesh.align()
-	struct = SKELETON(1)(mesh.to_plasm())
-	VIEW((struct))
+#	mesh.align()
+#	struct = SKELETON(1)(mesh.to_plasm())
+#	VIEW((struct))
 	
-	mesh.align()
-	struct = SKELETON(1)(mesh.to_plasm())
-	VIEW((struct))
+#	mesh.align()
+#	struct = SKELETON(1)(mesh.to_plasm())
+#	VIEW((struct))
 	
-	mesh.align()
-	struct = SKELETON(1)(mesh.to_plasm())
-	VIEW((struct))
+#	mesh.align()
+#	struct = SKELETON(1)(mesh.to_plasm())
+#	VIEW((struct))
 

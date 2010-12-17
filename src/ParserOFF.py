@@ -57,9 +57,7 @@ class ParserOff():
 		face_et_al_list = map( lambda x: map( lambda y: int(float(y)), re.split('[ ]+', x.strip())), filtered_lines[vertex_count+2:vertex_count+2+face_count])
 		face_list = [ l[1:l[0]+1] for l in face_et_al_list]
 		
-		mesh = Mesh([])
-		
-		mesh.add_all([ Triangle([ vertex_list[i] for i in vertexes_in_face]) for vertexes_in_face in face_list])
+		mesh = Mesh(vertex_list, face_list)
 		
 		return mesh
 		

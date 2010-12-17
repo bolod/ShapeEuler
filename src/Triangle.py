@@ -23,7 +23,6 @@ class Triangle():
 			info += str(point) + "\n"
 		
 		return info
-		
 	
 	def __getitem__(self, i):
 		
@@ -45,13 +44,17 @@ class Triangle():
 			self.current += 1
 			return self.points[self.current - 1]
 	
-	def index(self, value):
+	def index(self, point):
 		
 		for i in range(len(self.points)):
-			if value[0] == self.points[i][0] and value[1] == self.points[i][1] and value[2] == self.points[i][2]: 
+			if point[0] == self.points[i][0] and point[1] == self.points[i][1] and point[2] == self.points[i][2]: 
 				return i
 		
 		return -1
+	
+	def contains(self, point):
+		
+		return self.index(point) > 0
 	
 	def clone(self):
 		"""

@@ -1,16 +1,18 @@
 from numpy import *
 from pyplasm import *
 from ShapeEuler import *
-from Triangle import *
 
 class Mesh():
 
-	def __init__(self, triangle_list):
+	def __init__(self, point_list=[], tri_index_list=[]):
 		
 		self.current = 0
-		self.triangles = triangle_list
-		self.euler = array([[1.,0.,0.,0.],[0.,1.,0.,0.],[0.,0.,1.,0.], [0.,0.,0.,1.]])
-		self.barycenter = array([0.,0.,0.])
+		self.point_list = point_list
+		self.tri_index_list = tri_index_list
+		self.updated = True
+		self.euler = identity(4)
+		self.axes = identity(4)
+		self.barycenter = zeros(3)
 	
 	def __repr__(self):
 		"""
@@ -22,19 +24,22 @@ class Mesh():
 			info of this triangle
 		"""
 		
-		info = "\nmesh:\n"
-		for triangle in self.triangles:
-			info += str(triangle) + "\n"
+		info = "\nmesh:"
+		info += "\nn triangles: " + str(len(self.tri_index_list))
+		info += "\ntriangles: \n" + str(array(self.to_list()))
+		info += "\npoints: \n" + str(array(self.point_list))
+		info += "\nindex_list \n" + str(array(self.tri_index_list))
+		info += "\nn points: " + str(len(self.point_list))
+		info += "\neuler: \n" + str(array(self.euler))
+		info += "\nbarycenter: \n" + str(array(self.barycenter))
+		info += "\naxes: \n" + str(array(self.axes))
+		info += "\nupdated: " + str(self.updated)
 		
 		return info
 		
 	def __getitem__(self, i):
 		
-		return self.triangles[i]
-	
-	def __setitem__(self, i, value):
-		
-		self.triangles[i] = value
+		return [ self.point_list[index] for index in self.tri_index_list[i] ]
 	
 	def __iter__(self):
 		
@@ -42,16 +47,25 @@ class Mesh():
 		
 	def next(self):
 		
-		if self.current >= len(self.triangles):
+		if self.current >= len(self.tri_index_list):
 			raise StopIteration
 		else:
 			self.current += 1
-			return self.triangles[self.current - 1]
+			return self[self.current - 1]
 	
-	def index(self, value):
-		
-		return self.triangles.index(value)
-		
+	def to_list(self):
+		"""
+		Gets the triangles of this mesh.
+
+		Returns
+		-------
+		triangles : Triangle array
+			triangles of this atom
+		"""
+
+		return [ [ self.point_list[index] for index in tri_index ] for tri_index in self.tri_index_list ]
+	
+	
 	def clone(self):
 		"""
 		Clones this mesh.
@@ -62,26 +76,66 @@ class Mesh():
 			the clone of this mesh
 		"""
 		
-		clone = Mesh([])
-		
-		for triangle in self.triangles:
-			clone.add(triangle.clone())
+		clone = Mesh(self.point_list[:], self.tri_index_list[:])
 		
 		return clone
 	
-	def to_list(self):
+	def index_point(self, point, tollerance=10**-7):
 		"""
-		Gets the triangles of this mesh.
-		
+		Gets the index of the given point with the given tollerance.
+
+		Parameters
+		----------
+		point : list
+			point
+
+		tollerance : float
+			tollerance
+
 		Returns
 		-------
-		triangles : Triangle array
-			triangles of this atom
+		index : int
+			the index of the given point with the given tollerance
 		"""
 		
-		return self.triangles
+		for index in range(len(self.point_list)):
+			p = array(self.point_list[index])
+			if (sign(p) == sign(array(point))).all() and (abs(p - array(point)) < tollerance).all():
+				return index 
+		return -1
+	
+	def contains_point(self, point, tollerance=10**-7):
+		"""
+		Tests if this mesh contains the given point with the given tollerance.
+
+		Parameters
+		----------
+		point : list
+			point
+
+		tollerance : float
+			tollerance
+
+		Returns
+		-------
+		test : boolean
+			true if this mesh contains the given point with the given tollerance, 
+			false otherwise
+		"""
+
+		return self.index_point(point, tollerance) >= 0
+	
+	def add_point(self, point):
 		
-	def add(self, triangle):
+		index = self.index_point(point)
+		
+		if (index < 0):
+			self.point_list.append(point)
+			index = len(self.point_list) - 1
+			
+		return index
+	
+	def add_tri(self, triangle):
 		"""
 		Adds the given triangle to this mesh.
 		
@@ -97,7 +151,9 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		self.triangles.append(triangle)
+		self.tri_index_list.append([ self.add_point(point) for point in triangle ])
+		
+		self.updated = False
 		
 		return self
 	
@@ -120,6 +176,8 @@ class Mesh():
 		for triangle in triangle_list:
 			self.add(triangle)
 		
+		self.updated = False
+		
 		return self
 	
 	def size(self):
@@ -132,7 +190,7 @@ class Mesh():
 			the number of triangles of this mesh
 		"""
 		
-		return len(self.triangles)
+		return len(self.tri_index_list)
 	
 	def rotate(self, rotation):
 		"""
@@ -150,8 +208,9 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		for triangle in self.triangles:
-			triangle.rotate(rotation)
+		self.point_list = [ (dot(rotation, array(point))).tolist() for point in self.point_list ]
+		
+		self.updated = False
 		
 		return self
 
@@ -171,8 +230,9 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		for triangle in self.triangles:
-			triangle.scale(scale)
+		self.point_list = [ (array(point) * scale).tolist() for point in self.point_list ]
+		
+		self.updated = False
 		
 		return self
 	
@@ -192,34 +252,12 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		for triangle in self.triangles:
-			print "pre: ", triangle
-			triangle.translate(translation)
-			print "post:", triangle
+		self.point_list = [ (array(point) - translation).tolist() for point in self.point_list ]
+		
+		self.updated = False
 		
 		return self
 	
-	def update_euler(self, fun=II):
-		"""
-		Updates the affine euler matrix of this mesh.
-		
-		Parameters
-		----------
-		fun : function
-			the integral function
-		
-		Returns
-		-------
-		self : Mesh
-			this mesh,
-			for chaining purpose
-		"""
-		
-		tri_list = [ triangle.get_points() for triangle in self.triangles]
-		self.euler = array(AffineEulerMat(tri_list, fun))
-		
-		return self
-		
 	
 	def get_euler(self):
 		"""
@@ -232,21 +270,6 @@ class Mesh():
 		"""
 		
 		return self.euler
-	
-	def update_barycenter(self):
-		"""
-		Updates the barycenter of this mesh.
-		
-		Returns
-		-------
-		self : Mesh
-			this mesh,
-			for chaining purpose
-		"""
-		
-		self.barycenter = (array(self.euler[-1]) / self.euler[-1][-1])[:-1]
-		
-		return self
 	
 	def get_barycenter(self):
 		"""
@@ -271,14 +294,14 @@ class Mesh():
 				for chaning purpose
 		"""
 		
-		self.update_euler(fun)
-		print "euler", self.euler
-		self.update_barycenter()
-		print "barycenter", self.barycenter
+		self.euler = array(AffineEulerMat(self.to_list(), fun))
+		self.barycenter = (array(self.euler[-1]) / self.euler[-1][-1])[:-1]
+		
+		self.updated = True
 		
 		return self
 	
-	def get_principal_axes(self):
+	def get_principal_axes(self, fun=II):
 		"""
 		Gets the principal axes of this mesh.
 		
@@ -288,13 +311,14 @@ class Mesh():
 			the principal axes of this mesh
 		"""
 		
-		euler_3x3 = [ row[:3] for row in self.euler[:3]]
+		if not self.updated:
+			self.update(fun)
+		
+		euler_3x3 = self.euler[:3,:3]
 		
 		eigen_vec = transpose(linalg.eig(euler_3x3)[1])
 		eigen_val = linalg.eigvals(euler_3x3)
 		axes = [eigen_vec[i] for i in eigen_val.argsort()]
-		
-		print "\naxes\n", axes
 		
 		return axes
 	
@@ -313,9 +337,14 @@ class Mesh():
 			for chaining purpose
 		"""
 		
-		self.update(fun)
+		if not self.updated:
+			self.update(fun)
 		
-		return self.translate(self.get_barycenter()).rotate(self.get_principal_axes())
+		self.translate(self.get_barycenter()).rotate(self.get_principal_axes())
+		
+		self.updated = False
+		
+		return self
 		
 	def to_plasm(self):
 		"""
@@ -326,126 +355,139 @@ class Mesh():
 		struct : PLaSM HPC
 			the PLaSM HPC of this mesh
 		"""
-		print "to plasm"
-		triangles = [ triangle.to_plasm() for triangle in self.triangles ]
-		print array(triangles)
-		struct = STRUCT(triangles)
+		
+		struct = STRUCT([ MKPOL([triangle, [[1,2,3]], [1]]) for triangle in self.to_list() ])
 		
 		return struct
 
 	def split_z(self):
-		
-		cloned = self.clone()
-		
-		clipped_mesh = Mesh([])
-		z_positive_mesh = Mesh([])
-		z_negative_mesh = Mesh([])
-		
-		for tri in cloned:
-			if tri.is_over(2):
-				#print "is over!", tri
-				z_positive_mesh.add(tri)
-			elif tri.is_under(2) or tri.is_on(2):
-				#print "is under!\n"
-				z_negative_mesh.add(tri)
+	
+		tri_list = self.to_list()
+	
+		clipped_mesh = Mesh()
+		z_positive_mesh = Mesh()
+		z_negative_mesh = Mesh()
+	
+		for tri in tri_list:
+			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
+			
+			if z1 >= 0 and z2 >= 0 and z3 >= 0:
+				print "pos:\n", tri
+				z_positive_mesh.add_tri(tri)
+			
+			elif (z1 < 0 and z2 < 0 and z3 < 0) or (z1 == 0 and z2 == 0 and z3 == 0):
+				print "neg:\n", tri
+				z_negative_mesh.add_tri(tri)
+			
 			else:
-				#print "is clipped!\n"
-				clipped_mesh.add(tri)
+				print "clip:\n", tri
+				clipped_mesh.add_tri(tri)
 		
-		#single=[]
-		#none=[]
-		for clipped_tri in clipped_mesh:
-			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = clipped_tri.points
-			if (int(z1==0))+(int(z2==0))+(int(z3==0)) == 1: #one vertex on xy-plane
-				assert((int(z1==0))+(int(z2==0))+(int(z3==0)) == 1)
-				#single.append(clipped_tri)
-				#just enough
-				pos_ver =  filter(lambda (x,y,z): z>0, clipped_tri)[0]
-				neg_ver =  filter(lambda (x,y,z): z<0, clipped_tri)[0]
-				a_pos_ver = array(pos_ver)
-				a_neg_ver = array(neg_ver)
-				
+		for tri in clipped_mesh.to_list():
+			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
+		
+			#if there is one vertex on xy-plane
+			if (int(z1 == 0) + int(z2 == 0) + int(z3 == 0)) == 1: 
+			
+				pos_ver = filter(lambda (x,y,z): z > 0, tri)[0]
+				neg_ver = filter(lambda (x,y,z): z < 0, tri)[0]
+			
+				# begin math stuff...
+				pos_ver = array(pos_ver)
+				neg_ver = array(neg_ver)
+			
 				line = pos_ver - neg_ver
 				t = -1 * line[2]
-				
-				new_ver = neg_ver + t*line
-				
+				point_a = neg_ver + t * line
+			
 				line = pos_ver - neg_ver
-				t = -1*neg_ver[2] / line[2]
-				point_A = [ neg_ver[0] + line[0]*t, 
-							neg_ver[1] + line[1]*t, 
-							neg_ver[2] + line[2]*t]
+				t = -1 * neg_ver[2] / line[2]
+				point_b = neg_ver + t * line
+			
+				pos_ver = pos_ver.tolist()
+				neg_ver = neg_ver.tolist()
+				# end math stuff!
+			
+				new_pos_tri = tri[:]
+				new_pos_tri[new_pos_tri.index(neg_ver)] = pos_ver
+			
+				new_neg_tri = tri[:]
+				new_neg_tri[new_pos_tri.index(pos_ver)] = neg_ver
+
+				z_positive_mesh.add_tri(pos_new_tri)
+				z_negative_mesh.add_tri(neg_new_tri)
+		
+			else: 
+				(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
+			
+				pos_ver = filter(lambda (x,y,z): z > 0, tri)
+				neg_ver = filter(lambda (x,y,z): z < 0, tri)
 				
-				#pay attention to normals direction
-				pos_list = pos_ver.tolist()
-				neg_list = neg_ver.tolist()
-				pos_new_tri = clipped_tri.clone()
-				#print 'pos_new_tri', type(pos_new_tri)
-				#print 'neg_list:', neg_list
-				#print 'INDICE:', pos_new_tri.index(neg_list)
-				pos_new_tri[pos_new_tri.index(neg_list)] = pos_list
+				print "pos_ver: ", pos_ver
+				print "neg_ver: ", neg_ver
 				
-				neg_new_tri = clipped_tri.clone()
-				pos_new_tri[pos_new_tri.index(pos_list)] = neg_list
-
-				z_positive_mesh.add(pos_new_tri)
-				z_negative_mesh.add(neg_new_tri)
-
-			else: #no vertexes on xy-plane
-				assert((int(z1==0))+(int(z2==0))+(int(z3==0)) == 0)
-				#none.append(clipped_tri)
-				n_zeta_positive = (int(z1>0))+(int(z2>0))+(int(z3>0))
-				n_zeta_negative = (int(z1<0))+(int(z2<0))+(int(z3<0))
-				assert( (n_zeta_positive == 1 and n_zeta_negative == 2) or (n_zeta_positive == 2 and n_zeta_negative == 1) )
-
-				#SUPER JUST ENOUGH
-				pos_vers = filter(lambda (x,y,z): z>0, clipped_tri.points)
-				neg_vers = filter(lambda (x,y,z): z<0, clipped_tri.points)
-
-				if len(pos_vers) == 2:
-					uno = array(neg_vers[0])
-					due = array(pos_vers)
+				if len(pos_ver) == 2:
+					one_ver = neg_ver[0]
+					two_ver = pos_ver
 				else:
-					uno = array(pos_vers[0])
-					due = array(neg_vers)
-
-				assert(len(due) == 2)
-				assert(len(uno) == 3)
-
-				#punto A = (due[0] - uno)
-				line_A = due[0] - uno
-				t_A = -1*uno[2] / line_A[2]
-				point_A = [ uno[0] + line_A[0]*t_A, 
-							uno[1] + line_A[1]*t_A, 
-							uno[2] + line_A[2]*t_A]
-
-				#punto B = (due[1] - uno)
-				line_B = due[1] - uno
-				t_B = -1*uno[2] / line_B[2]
-				point_B = [ uno[0] + line_B[0]*t_B, 
-							uno[1] + line_B[1]*t_B, 
-							uno[2] + line_B[2]*t_B]
-
+					one_ver = pos_ver[0]
+					two_ver = neg_ver
+				
+				print "one_ver: ", one_ver
+				print "two_ver: ", two_ver
+				
+				# begin math stuff...
+				two_ver_0 = array(two_ver[0])
+				two_ver_1 = array(two_ver[1])
+				one_ver = array(one_ver)
+				
+				line_a = two_ver_0 - one_ver
+				t_a = -1 * one_ver[2] / line_a[2]
+				point_a = one_ver + t_a * line_a
+			
+				line_b = two_ver_1 - one_ver
+				t_b = -1 * one_ver[2] / line_b[2]
+				point_b = one_ver + t_b * line_b 
+			
+				two_ver_0 = two_ver_0.tolist()
+				two_ver_1 = two_ver_1.tolist()
+				one_ver = one_ver.tolist()
+				point_a = point_a.tolist()
+				point_b = point_b.tolist()
+				# end math stuff!
+			
 				#pay attention to normals direction
-				uno_new_tri = clipped_tri.clone()
-				uno_new_tri[uno_new_tri.index(due[0].tolist())] = point_A
-				uno_new_tri[uno_new_tri.index(due[1].tolist())] = point_B
+				one_new_tri = tri[:]
+				one_new_tri[one_new_tri.index(two_ver_0)] = point_a
+				one_new_tri[one_new_tri.index(two_ver_1)] = point_b
 
-				due_new_tri = [clipped_tri.clone(), clipped_tri.clone()]
-				due_new_tri[0][due_new_tri[0].index(uno.tolist())] = point_A
-				due_new_tri[0][due_new_tri[0].index(due[1].tolist())] = point_B
-				due_new_tri[1][due_new_tri[1].index(uno.tolist())] = point_B
+				two_new_tri = [tri[:], tri[:]]
+				two_new_tri[0][two_new_tri[0].index(one_ver)] = point_a
+				two_new_tri[0][two_new_tri[0].index(two_ver_1)] = point_b
+				two_new_tri[1][two_new_tri[1].index(one_ver)] = point_b
 
-				if (int(z1>0)+int(z2>0)+int(z3>0)) < 2:
-					to_add_uno = z_positive_mesh
-					to_add_due = z_negative_mesh
+				if (int(z1>0) + int(z2>0) + int(z3>0)) < 2:
+					to_add_one = z_positive_mesh
+					to_add_two = z_negative_mesh
 				else:
-					to_add_due = z_positive_mesh
-					to_add_uno = z_negative_mesh
+					to_add_two = z_positive_mesh
+					to_add_one = z_negative_mesh
 
-				to_add_uno.add(uno_new_tri)
-				to_add_due.add(due_new_tri[0])
-				to_add_due.add(due_new_tri[1])
-
+				to_add_one.add_tri(one_new_tri)
+				to_add_two.add_tri(two_new_tri[0])
+				to_add_two.add_tri(two_new_tri[1])
+	
 		#print 'len(single):', len(single), ' - len(none):', len(none)
 		return z_positive_mesh, z_negative_mesh
+
+if __name__ == "__main__":
+	
+	m = Mesh()
+	m.add_tri([[0,0,1],[0,1,-1],[1,0,-1]])
+	m.add_tri([[0,0,1],[0,0,2],[0,1,-1]])
+	print m
+	p = m.to_plasm()
+	a, b = m.split_z()
+	p_a = COLOR(RED)(a.to_plasm())
+	p_b = COLOR(GREEN)(b.to_plasm())
+	VIEW(STRUCT([p_a, p_b]))
