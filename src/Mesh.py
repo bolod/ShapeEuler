@@ -4,7 +4,7 @@ from ShapeEuler import *
 
 class Mesh():
 
-	def __init__(self, point_list=[], tri_index_list=[]):
+	def __init__(self, point_list, tri_index_list):
 		
 		self.current = 0
 		self.point_list = point_list
@@ -364,27 +364,24 @@ class Mesh():
 	
 		tri_list = self.to_list()
 	
-		clipped_mesh = Mesh()
-		z_positive_mesh = Mesh()
-		z_negative_mesh = Mesh()
+		clipped_mesh = Mesh([],[])
+		z_positive_mesh = Mesh([],[])
+		z_negative_mesh = Mesh([],[])
 	
 		for tri in tri_list:
-			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
-			
+			[[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = tri
+
 			if z1 >= 0 and z2 >= 0 and z3 >= 0:
-				print "pos:\n", tri
 				z_positive_mesh.add_tri(tri)
-			
 			elif (z1 < 0 and z2 < 0 and z3 < 0) or (z1 == 0 and z2 == 0 and z3 == 0):
-				print "neg:\n", tri
 				z_negative_mesh.add_tri(tri)
-			
 			else:
-				print "clip:\n", tri
 				clipped_mesh.add_tri(tri)
 		
+		print "clipped_mesh:", clipped_mesh
+		
 		for tri in clipped_mesh.to_list():
-			(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
+			[[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = tri
 		
 			#if there is one vertex on xy-plane
 			if (int(z1 == 0) + int(z2 == 0) + int(z3 == 0)) == 1: 
@@ -419,12 +416,12 @@ class Mesh():
 		
 			else: 
 				(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
-			
+				
 				pos_ver = filter(lambda (x,y,z): z > 0, tri)
 				neg_ver = filter(lambda (x,y,z): z < 0, tri)
 				
-				print "pos_ver: ", pos_ver
-				print "neg_ver: ", neg_ver
+#				print "pos_ver: ", array(pos_ver)
+#				print "neg_ver: ", array(neg_ver)
 				
 				if len(pos_ver) == 2:
 					one_ver = neg_ver[0]
@@ -433,8 +430,8 @@ class Mesh():
 					one_ver = pos_ver[0]
 					two_ver = neg_ver
 				
-				print "one_ver: ", one_ver
-				print "two_ver: ", two_ver
+#				print "one_ver: ", array(one_ver)
+#				print "two_ver: ", array(two_ver)
 				
 				# begin math stuff...
 				two_ver_0 = array(two_ver[0])
@@ -482,7 +479,7 @@ class Mesh():
 
 if __name__ == "__main__":
 	
-	m = Mesh()
+	m = Mesh([],[])
 	m.add_tri([[0,0,1],[0,1,-1],[1,0,-1]])
 	m.add_tri([[0,0,1],[0,0,2],[0,1,-1]])
 	print m
