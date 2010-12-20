@@ -364,24 +364,94 @@ class Mesh():
 	
 		tri_list = self.to_list()
 	
-		clipped_mesh = Mesh([],[])
 		z_positive_mesh = Mesh([],[])
 		z_negative_mesh = Mesh([],[])
-	
+		
+		z_pos_mesh_point_list = []
+		z_pos_mesh_tri_list = [] 
+		
+		z_neg_mesh_point_list = []
+		z_neg_mesh_tri_list = []
+		
+		z_cli_mesh_point_list = []
+		z_cli_mesh_tri_list = []
+		
 		for tri in tri_list:
-			[[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = tri
-
+			[point0,point1,point2] = tri
+			# index0 = tri_index[0]
+			# index1 = tri_index[1]
+			# index2 = tri_index[2]
+			# 
+			# point0 = self.point_list[0]
+			# point1 = self.point_list[1]
+			# point2 = self.point_list[2]
+			
+			[x1,y1,z1] = point0
+			[x2,y2,z2] = point1
+			[x3,y3,z3] = point2
+			
 			if z1 >= 0 and z2 >= 0 and z3 >= 0:
-				z_positive_mesh.add_tri(tri)
+				new_tri = [-1,-1,-1]
+				
+				if not point0 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point0)
+				new_tri[0] = z_pos_mesh_point_list.index(point0)
+				
+				if not point1 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point1)
+				new_tri[1] = z_pos_mesh_point_list.index(point1)
+				
+				if not point2 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point2)
+				new_tri[2] = z_pos_mesh_point_list.index(point2)
+				
+				z_pos_mesh_tri_list.append(new_tri)
+				
 			elif (z1 < 0 and z2 < 0 and z3 < 0) or (z1 == 0 and z2 == 0 and z3 == 0):
-				z_negative_mesh.add_tri(tri)
+				new_tri = [-1,-1,-1]
+				
+				if not point0 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point0)
+				new_tri[0] = z_neg_mesh_point_list.index(point0)
+				
+				if not point1 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point1)
+				new_tri[1] = z_neg_mesh_point_list.index(point1)
+				
+				if not point2 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point2)
+				new_tri[2] = z_neg_mesh_point_list.index(point2)
+				
+				z_neg_mesh_tri_list.append(new_tri)
+				
 			else:
-				clipped_mesh.add_tri(tri)
+				new_tri = [-1,-1,-1]
+				
+				if not point0 in z_cli_mesh_point_list:
+					z_cli_mesh_point_list.append(point0)
+				new_tri[0] = z_cli_mesh_point_list.index(point0)
+				
+				if not point1 in z_cli_mesh_point_list:
+					z_cli_mesh_point_list.append(point1)
+				new_tri[1] = z_cli_mesh_point_list.index(point1)
+				
+				if not point2 in z_cli_mesh_point_list:
+					z_cli_mesh_point_list.append(point2)
+				new_tri[2] = z_cli_mesh_point_list.index(point2)
+				
+				z_cli_mesh_tri_list.append(new_tri)
 		
-		print "clipped_mesh:", clipped_mesh
-		
-		for tri in clipped_mesh.to_list():
-			[[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]] = tri
+		for tri_index in z_cli_mesh_tri_list:
+			
+			point0 = z_cli_mesh_point_list[tri_index[0]]
+			point1 = z_cli_mesh_point_list[tri_index[1]]
+			point2 = z_cli_mesh_point_list[tri_index[2]]
+			
+			[x1,y1,z1] = point0
+			[x2,y2,z2] = point1
+			[x3,y3,z3] = point2
+			
+			tri = [point0, point1, point2]
 		
 			#if there is one vertex on xy-plane
 			if (int(z1 == 0) + int(z2 == 0) + int(z3 == 0)) == 1: 
@@ -411,17 +481,50 @@ class Mesh():
 				new_neg_tri = tri[:]
 				new_neg_tri[new_pos_tri.index(pos_ver)] = neg_ver
 
-				z_positive_mesh.add_tri(pos_new_tri)
-				z_negative_mesh.add_tri(neg_new_tri)
-		
+				#z_positive_mesh.add_tri(new_pos_tri)
+				new_tri = [-1,-1,-1]
+				point0 = new_pos_tri[0]
+				point1 = new_pos_tri[1]
+				point2 = new_pos_tri[2]
+				
+				if not point0 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point0)
+				new_tri[0] = z_pos_mesh_point_list.index(point0)
+				
+				if not point1 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point1)
+				new_tri[1] = z_pos_mesh_point_list.index(point1)
+				
+				if not point2 in z_pos_mesh_point_list:
+					z_pos_mesh_point_list.append(point2)
+				new_tri[2] = z_pos_mesh_point_list.index(point2)
+				
+				z_pos_mesh_tri_list.append(new_tri)
+				
+				#z_negative_mesh.add_tri(neg_new_tri)
+				new_tri = [-1,-1,-1]
+				point0 = new_neg_tri[0]
+				point1 = new_neg_tri[1]
+				point2 = new_neg_tri[2]
+				
+				if not point0 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point0)
+				new_tri[0] = z_neg_mesh_point_list.index(point0)
+				
+				if not point1 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point1)
+				new_tri[1] = z_neg_mesh_point_list.index(point1)
+				
+				if not point2 in z_neg_mesh_point_list:
+					z_neg_mesh_point_list.append(point2)
+				new_tri[2] = z_neg_mesh_point_list.index(point2)
+				
+				z_neg_mesh_tri_list.append(new_tri)
+				
 			else: 
-				(x1,y1,z1),(x2,y2,z2),(x3,y3,z3) = tri
 				
 				pos_ver = filter(lambda (x,y,z): z > 0, tri)
 				neg_ver = filter(lambda (x,y,z): z < 0, tri)
-				
-#				print "pos_ver: ", array(pos_ver)
-#				print "neg_ver: ", array(neg_ver)
 				
 				if len(pos_ver) == 2:
 					one_ver = neg_ver[0]
@@ -429,9 +532,6 @@ class Mesh():
 				else:
 					one_ver = pos_ver[0]
 					two_ver = neg_ver
-				
-#				print "one_ver: ", array(one_ver)
-#				print "two_ver: ", array(two_ver)
 				
 				# begin math stuff...
 				two_ver_0 = array(two_ver[0])
@@ -464,17 +564,85 @@ class Mesh():
 				two_new_tri[1][two_new_tri[1].index(one_ver)] = point_b
 
 				if (int(z1>0) + int(z2>0) + int(z3>0)) < 2:
-					to_add_one = z_positive_mesh
-					to_add_two = z_negative_mesh
+					to_add_one_point_list = z_pos_mesh_point_list
+					to_add_one_tri_list = z_pos_mesh_tri_list
+					
+					to_add_two_point_list = z_neg_mesh_point_list
+					to_add_two_tri_list = z_neg_mesh_tri_list
 				else:
-					to_add_two = z_positive_mesh
-					to_add_one = z_negative_mesh
+					to_add_one_point_list = z_neg_mesh_point_list
+					to_add_one_tri_list = z_neg_mesh_tri_list
+					
+					to_add_two_point_list = z_pos_mesh_point_list
+					to_add_two_tri_list = z_pos_mesh_tri_list
 
-				to_add_one.add_tri(one_new_tri)
-				to_add_two.add_tri(two_new_tri[0])
-				to_add_two.add_tri(two_new_tri[1])
-	
-		#print 'len(single):', len(single), ' - len(none):', len(none)
+				#to_add_one.add_tri(one_new_tri)
+				new_tri = [-1,-1,-1]
+				point0 = one_new_tri[0]
+				point1 = one_new_tri[1]
+				point2 = one_new_tri[2]
+				
+				if not point0 in to_add_one_point_list:
+					to_add_one_point_list.append(point0)
+				new_tri[0] = to_add_one_point_list.index(point0)
+				
+				if not point1 in to_add_one_point_list:
+					to_add_one_point_list.append(point1)
+				new_tri[1] = to_add_one_point_list.index(point1)
+				
+				if not point2 in to_add_one_point_list:
+					to_add_one_point_list.append(point2)
+				new_tri[2] = to_add_one_point_list.index(point2)
+				
+				to_add_one_tri_list.append(new_tri)
+				
+				#to_add_two.add_tri(two_new_tri[0])
+				new_tri = [-1,-1,-1]
+				point0 = two_new_tri[0][0]
+				point1 = two_new_tri[0][1]
+				point2 = two_new_tri[0][2]
+				
+				if not point0 in to_add_two_point_list:
+					to_add_two_point_list.append(point0)
+				new_tri[0] = to_add_two_point_list.index(point0)
+				
+				if not point1 in to_add_two_point_list:
+					to_add_two_point_list.append(point1)
+				new_tri[1] = to_add_two_point_list.index(point1)
+				
+				if not point2 in to_add_two_point_list:
+					to_add_two_point_list.append(point2)
+				new_tri[2] = to_add_two_point_list.index(point2)
+				
+				to_add_two_tri_list.append(new_tri)
+				
+				#to_add_two.add_tri(two_new_tri[1])
+				new_tri = [-1,-1,-1]
+				point0 = two_new_tri[1][0]
+				point1 = two_new_tri[1][1]
+				point2 = two_new_tri[1][2]
+				
+				if not point0 in to_add_two_point_list:
+					to_add_two_point_list.append(point0)
+				new_tri[0] = to_add_two_point_list.index(point0)
+				
+				if not point1 in to_add_two_point_list:
+					to_add_two_point_list.append(point1)
+				new_tri[1] = to_add_two_point_list.index(point1)
+				
+				if not point2 in to_add_two_point_list:
+					to_add_two_point_list.append(point2)
+				new_tri[2] = to_add_two_point_list.index(point2)
+				
+				to_add_two_tri_list.append(new_tri)
+				
+		
+		z_positive_mesh.point_list = z_pos_mesh_point_list
+		z_positive_mesh.tri_index_list = z_pos_mesh_tri_list
+		
+		z_negative_mesh.point_list = z_neg_mesh_point_list
+		z_negative_mesh.tri_index_list = z_neg_mesh_tri_list
+		
 		return z_positive_mesh, z_negative_mesh
 
 if __name__ == "__main__":
